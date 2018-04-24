@@ -1,0 +1,9 @@
+1. open pi video stream: 
+Open an new Terminal:
+Type: raspivid -t 0 -w 320 -h 240 -fps 30 -o - | ffmpeg -i - -s 320x240 -f mpegts -codec:v mpeg1video -bf 0 -codec:a mp2 -r 30 http://127.0.0.1:8081/xiong49
+
+2. set up http-server:
+Open an new Terminal and go to the /home/pi/Documents/Headtrack/webcam and Type: http-server
+
+3. open websocket and start listen
+Open an new Terminal and go to the /home/pi/Documents/Headtrack/webcam and Type: node websocket-relay.js xiong49 8081 8082
