@@ -16,7 +16,7 @@ if __name__ == '__main__':
     face_cascade = cv.CascadeClassifier('heads_cascade.xml')
     #face_cascade = cv.CascadeClassifier('HS.xml')
     
-    video_capture = cv.VideoCapture("sample1.mp4")
+    video_capture = cv.VideoCapture("sample.mp4")
     
     # only when count down equals to 0 can the sub detection zones detect new heads
     # count down for upper sub detection zone
@@ -41,8 +41,11 @@ if __name__ == '__main__':
     inNum = 0
     outNum = 0
     
-    while True:
-        _ , img = video_capture.read()
+    success = True
+    while success:
+        success , img = video_capture.read()
+        
+        img = cv.resize(img,(320,240))
         
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         #print(gray.shape)
@@ -133,11 +136,11 @@ if __name__ == '__main__':
                     if inCountWaittime == 0:
                         inNum += 1
                         print('inNum=',inNum)
-                        inCountWaittime = 20
+                        inCountWaittime = 40
                     else:
                         pass
                     
-                detection_bar_upper_countdown = 70
+                detection_bar_upper_countdown = 10
                 if headcentre_x>0 and headcentre_x<int(length/4):
                     cv.rectangle(block1_upper,(0,0),(block1_upper_length,block1_upper_width),(0,0,255),4)
                     
@@ -159,11 +162,11 @@ if __name__ == '__main__':
                     if outCountWaittime == 0:
                         outNum += 1
                         print('outNum=',outNum)
-                        outCountWaittime = 20
+                        outCountWaittime = 40
                     else:
                         pass
                 
-                detection_bar_lower_countdown = 70
+                detection_bar_lower_countdown = 10
                 if headcentre_x>0 and headcentre_x<int(length/4):
                     cv.rectangle(block1_lower,(0,0),(block1_lower_length,block1_lower_width),(0,0,255),4)
                     
