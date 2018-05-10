@@ -8,9 +8,28 @@ It's a practice
 @author: sadde
 '''
 import cv2 as cv
+from flask import Flask,render_template
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('view-stream.html')
+
+@app.route('/<order>')
+def order(order):
+    if order=='forward':
+        return 'forward'
+    elif order=='left':
+        return 'left'
+    elif order=='right':
+        return 'right'
+    elif order=='back':
+        return 'back'
+    else:
+        return order
 
 if __name__ == '__main__':
-    
+    app.run(debug=True, host='0.0.0.0', port=5000)
     #face_cascade = cv.CascadeClassifier('cascadG.xml')#_upperbody.xml')
     #face_cascade = cv.CascadeClassifier('cascadeH5.xml')
     face_cascade = cv.CascadeClassifier('heads_cascade.xml')
@@ -40,6 +59,7 @@ if __name__ == '__main__':
     # number of in and out
     inNum = 0
     outNum = 0
+    numofpeople = 40
     
     success = True
     while success:
@@ -135,6 +155,7 @@ if __name__ == '__main__':
                 if detection_bar_lower_countdown > 0:
                     if inCountWaittime == 0:
                         inNum += 1
+                        numofpeople += 1
                         print('inNum=',inNum)
                         inCountWaittime = 40
                     else:
@@ -161,6 +182,7 @@ if __name__ == '__main__':
                 if detection_bar_upper_countdown > 0:
                     if outCountWaittime == 0:
                         outNum += 1
+                        numofpeople -= 1
                         print('outNum=',outNum)
                         outCountWaittime = 40
                     else:
@@ -215,10 +237,12 @@ if __name__ == '__main__':
             outCountWaittime=0
         
         font = cv.FONT_HERSHEY_SIMPLEX
-        text = 'Number of In:'+str(inNum)+'  q'+'Number of Out:'+str(outNum)
+        
+        text = 'Number of people:'+str(numofpeople) # 'Number of In:'+str(inNum)+'  '+'Number of Out:'+str(outNum)+' 
         print(text)
         cv.putText(img, text, (0,10), font, 0.5, (0,255,255), 2, cv.LINE_AA)
         
+
         
         cv.namedWindow('img')
         cv.imshow('img', img)
