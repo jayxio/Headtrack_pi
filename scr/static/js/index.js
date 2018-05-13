@@ -20,6 +20,11 @@ function moveProgressBar() {
   }, animationLength);
 }
 
+// run when the body get loaded
+function handleLoadEvent(){
+    document.getElementById('snap').addEventListener('click',hahameixie);
+}
+
 //the function is called when user asked the robot if he is happy
 function sendAnnotationRequest()
 {

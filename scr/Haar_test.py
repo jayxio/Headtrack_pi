@@ -1,35 +1,34 @@
 '''
 Created on Apr 15, 2018
 
-A face detection program that use basic function in OpenCV3
+A head detection program that use basic function in OpenCV3
 
 It's a practice
 
 @author: sadde
 '''
 import cv2 as cv
-from flask import Flask,render_template
-app = Flask(__name__)
+import json
+import requests
+from multiprocessing import Process, Queue 
+from flask import Flask, render_template, request
+from flask import g, current_app
 
-@app.route('/')
+app = Flask(__name__, template_folder='static')
+count = Flask('countpeople')
+cxt = count.app_context()
+cxt.push()
+print(current_app.name)
+
+@app.route('/', methods=['POST','GET'])
 def index():
-    return render_template('view-stream.html')
+    with open('numopeople.txt','r') as f:
+            numofpeople = f.read()
+            print('readddd:',numofpeople)
 
-@app.route('/<order>')
-def order(order):
-    if order=='forward':
-        return 'forward'
-    elif order=='left':
-        return 'left'
-    elif order=='right':
-        return 'right'
-    elif order=='back':
-        return 'back'
-    else:
-        return order
+    return render_template('index.html', num_of_people=numofpeople)
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+def count(q):
     #face_cascade = cv.CascadeClassifier('cascadG.xml')#_upperbody.xml')
     #face_cascade = cv.CascadeClassifier('cascadeH5.xml')
     face_cascade = cv.CascadeClassifier('heads_cascade.xml')
@@ -71,10 +70,10 @@ if __name__ == '__main__':
         #print(gray.shape)
         width, length = gray.shape # width now is 240, length is 320
         
-        bar_upper_upperedge = int(width*0.05)
-        bar_upper_loweredge = 110
+        bar_upper_upperedge = int(width*0.1)
+        bar_upper_loweredge = 130
         bar_lower_loweredge = int(width*0.95)
-        bar_lower_upperedge = 120
+        bar_lower_upperedge = 140
         
         '''
         cv.namedWindow('img')
@@ -89,7 +88,7 @@ if __name__ == '__main__':
         #heads = face_cascade.detectMultiScale(gray, 1.04, 4, minSize=(40,40), maxSize=(80,80)) # HS
         #heads = face_cascade.detectMultiScale(gray, 1.2, 3, minSize=(60,60) ) # cascadeH5
         #heads = face_cascade.detectMultiScale(gray, 1.1, 7, minSize=(70,70) ) # cascadG
-        heads = face_cascade.detectMultiScale(gray, 1.03,minNeighbors=5, minSize=(60,60), maxSize=(150,150) ) # heads_cascade
+        heads = face_cascade.detectMultiScale(gray, 1.04,minNeighbors=5, minSize=(60,60), maxSize=(100,100) ) # heads_cascade
         
         
         
@@ -239,18 +238,47 @@ if __name__ == '__main__':
         font = cv.FONT_HERSHEY_SIMPLEX
         
         text = 'Number of people:'+str(numofpeople) # 'Number of In:'+str(inNum)+'  '+'Number of Out:'+str(outNum)+' 
-        print(text)
+        # print(text)
         cv.putText(img, text, (0,10), font, 0.5, (0,255,255), 2, cv.LINE_AA)
+        q.put(numofpeople)        
         
-
-        
-        cv.namedWindow('img')
+        #cv.namedWindow('img')
         cv.imshow('img', img)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
-    
+    	
     video_capture.release()
     cv.destroyAllWindows()    
+
+#@app.before_request
+def get_num_of_people():
     
+    return 'fd'
+
+def read_then_send_number(q):
+    while True:
+        numofpeople = q.get(True)
+        
+        #baseUrl = "http://10.19.3.82:5000/"
+        #postdic = {
+        #    "numofpeople":numofpeople
+        #}
+        #r = requests.get(baseUrl,params=postdic)
+        
+        with open('numopeople.txt','w') as f:
+            f.write(str(numofpeople))
+        
+        #print("reply:",r.text)
+
+if __name__ == '__main__':
+    q = Queue()
+    observe = Process(target=count,args=(q,))
+    read = Process(target=read_then_send_number,args=(q,))
+    observe.start()
+    read.start()
+    #count.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
+    #observe.join()
+    #read.terminate()
     
     
